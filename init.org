@@ -888,7 +888,12 @@ Setup [[https://github.com/bbatsov/projectile][projectile]].
 Setup [[https://github.com/emacs-lsp/lsp-mode][lsp-mode]].
 
 #+BEGIN_SRC elisp
-(use-package lsp-mode :defer t)
+(use-package lsp-mode :defer t
+  :config
+  (lsp-register-client
+   (make-lsp-client :new-connection (lsp-stdio-connection "pyls")
+                    :major-modes '(python-mode)
+                    :server-id 'pyls)))
 
 (use-package lsp-ui :commands lsp-ui-mode :after lsp-mode :defer t
   :config
@@ -990,11 +995,6 @@ Major mode for =Dockerfile=.
 #+begin_src elisp
 (use-package python :defer t :ensure f
   :config
-
-  (lsp-register-client
-   (make-lsp-client :new-connection (lsp-stdio-connection "pyls")
-                    :major-modes '(python-mode)
-                    :server-id 'pyls))
   (add-hook 'python-mode-hook 'lsp-mode))
 #+end_src
 
