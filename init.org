@@ -57,8 +57,8 @@
     - [[#smerge-mode][Smerge-mode]]
   - [[#project-management][Project Management]]
     - projectile
-  - [[#linters][Linters]]
-    - flycheck
+  - [[#language-server-protocol][Language Server Protocol]]
+    - LSP mode
   - [[#snippets][Snippets]]
     - yasnippet
   + [[#search][Search]]
@@ -883,52 +883,21 @@ Setup [[https://github.com/bbatsov/projectile][projectile]].
           projectile-completion-system 'ido))
 #+end_src
 
-**** Linters
+**** Language Server Protocol
 
-Use modern [[http://www.flycheck.org/en/latest/][flycheck]].
+Setup [[https://github.com/emacs-lsp/lsp-mode][lsp-mode]].
 
-#+begin_src elisp
-(use-package flycheck :defer t
+#+BEGIN_SRC elisp
+(use-package lsp-mode :defer t)
+
+(use-package lsp-ui :commands lsp-ui-mode :after lsp-mode :defer t
   :config
-  (flycheck-def-config-file-var flycheck-typescript-tsconfig
-      typescript-tslint "tslint.json"
-    :safe #'stringp
-    :package-version '(flycheck . "27"))
+  (setq lsp-ui-sideline-ignore-duplicate t)
+  (add-hook 'lsp-mode-hook 'lsp-ui-mode))
 
-  (defun flycheck-parse-tslint (output checker buffer)
-    "Parse TSLint errors from JSON OUTPUT.
-
-CHECKER and BUFFER denoted the CHECKER that returned OUTPUT and
-the BUFFER that was checked respectively.
-
-See URL `https://palantir.github.io/tslint/' for more information
-about TSLint."
-    (let ((json-array-type 'list))
-      (seq-map (lambda (message)
-                 (let-alist message
-                   (flycheck-error-new-at
-                    (+ 1 .startPosition.line)
-                    (+ 1 .startPosition.character)
-                    'warning .failure
-                    :id .ruleName
-                    :checker checker
-                    :buffer buffer
-                    :filename .name)))
-               ;; Don't try to parse empty output as JSON
-               (and (not (string-empty-p output))
-                    (car (flycheck-parse-json output))))))
-
-    (flycheck-define-checker typescript-tslint
-      "TypeScript style checker using TSLint."
-      :command ("tslint" "--type-check" "--format" "json"
-                (config-file "--config" flycheck-typescript-tslint-config)
-                (config-file "--project" flycheck-typescript-tsconfig)
-                (option "--rules-dir" flycheck-typescript-tslint-rulesdir)
-                (eval flycheck-tslint-args)
-                source-original)
-      :error-parser flycheck-parse-tslint
-      :modes (typescript-mode)))
-#+end_src
+(use-package company-lsp :commands company-lsp :after lsp-mode :defer t
+  :config (push 'company-lsp company-backends))
+#+END_SRC
 
 **** Snippets
 
@@ -959,8 +928,7 @@ Browser style [[https://github.com/keyword-search/keyword-search][keyword search
   :config
   (setq afsmnghr/search-alist
         '((t/ya-en-ru . "https://translate.yandex.ru/m/translate?text=%s&lang=en-ru")
-          (t/ya-ru-en . "https://translate.yandex.ru/m/translate?text=%s&lang=ru-en")
-          (reddit . "https://www.reddit.com/search?q=%s"))
+          (t/ya-ru-en . "https://translate.yandex.ru/m/translate?text=%s&lang=ru-en"))
         keyword-search-alist (append keyword-search-alist afsmnghr/search-alist)))
 #+end_src
 
@@ -1015,15 +983,6 @@ Major mode for =Dockerfile=.
 (use-package ruby-mode :defer t :ensure f
   :mode (("\\.cr\\'" . ruby-mode)
          (".irbrc" . ruby-mode)))
-
-(use-package rubocop :defer t
-  :init (add-hook 'ruby-mode-hook 'rubocop-mode)
-  (add-to-list 'ruby-mode-hook 'flycheck-mode)
-  (if (version< emacs-version "24.4")
-      (eval-after-load 'flycheck-mode
-        '(progn (flycheck-add-mode 'ruby-rubocop 'ruby-mode)))
-    (with-eval-after-load 'flycheck-mode
-      (flycheck-add-mode 'ruby-rubocop 'ruby-mode))))
 #+end_src
 
 ***** Python
@@ -1031,8 +990,12 @@ Major mode for =Dockerfile=.
 #+begin_src elisp
 (use-package python :defer t :ensure f
   :config
-  (add-to-list 'python-mode-hook 'flycheck-mode)
-  (setq flycheck-python-pylint-executable "pylint"))
+
+  (lsp-register-client
+   (make-lsp-client :new-connection (lsp-stdio-connection "pyls")
+                    :major-modes '(python-mode)
+                    :server-id 'pyls))
+  (add-hook 'python-mode-hook 'lsp-mode))
 #+end_src
 
 ***** Javascript
@@ -1043,7 +1006,6 @@ Major mode for =Dockerfile=.
 
 (use-package typescript-mode :defer t
   :config
-  ;; (add-to-list 'typescript-mode-hook 'flycheck-mode)
   (setq typescript-indent-level 2))
 
 (use-package json :config (setq js-indent-level 2))
@@ -1056,10 +1018,7 @@ Major mode for =Dockerfile=.
                         js2-indent-switch-body t
                         js2-auto-indent-p t
                         js2-highlight-level 3
-                        js2-global-externs '("angular")
-                        js2-indent-on-enter-key t)
-  (setq flycheck-disabled-checkers '(javascript-jshint))
-  (add-to-list 'js2-mode-hook 'flycheck-mode))
+                        js2-indent-on-enter-key t))
 #+end_src
 
 **** Templates
