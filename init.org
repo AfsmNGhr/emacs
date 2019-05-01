@@ -888,20 +888,26 @@ Setup [[https://github.com/bbatsov/projectile][projectile]].
 Setup [[https://github.com/emacs-lsp/lsp-mode][lsp-mode]].
 
 #+BEGIN_SRC elisp
-(use-package lsp-mode :defer t
-  :config
-  (lsp-register-client
-   (make-lsp-client :new-connection (lsp-stdio-connection "pyls")
-                    :major-modes '(python-mode)
-                    :server-id 'pyls)))
+(use-package eglot :defer t)
 
-(use-package lsp-ui :commands lsp-ui-mode :after lsp-mode :defer t
-  :config
-  (setq lsp-ui-sideline-ignore-duplicate t)
-  (add-hook 'lsp-mode-hook 'lsp-ui-mode))
+;; (use-package lsp-mode :defer t
+;;   :config
+;;   (lsp-register-client
+;;    (make-lsp-client :new-connection (lsp-stdio-connection "pyls")
+;;                     :major-modes '(python-mode)
+;;                     :server-id 'pyls)))
 
-(use-package company-lsp :commands company-lsp :after lsp-mode :defer t
-  :config (push 'company-lsp company-backends))
+;; (use-package lsp-ui :commands lsp-ui-mode :after lsp-mode :defer t
+;;   :config
+;;   (setq lsp-ui-sideline-ignore-duplicate t)
+;;   (add-hook 'lsp-mode-hook 'lsp-ui-mode))
+
+;; (use-package company-lsp :commands company-lsp :after lsp-mode :defer t
+;;   :config
+;;   (setq company-transformers nil
+;;         company-lsp-async t
+;;         company-lsp-cache-candidates nil)
+;;   (push 'company-lsp company-backends))
 #+END_SRC
 
 **** Snippets
@@ -994,8 +1000,7 @@ Major mode for =Dockerfile=.
 
 #+begin_src elisp
 (use-package python :defer t :ensure f
-  :config
-  (add-hook 'python-mode-hook 'lsp-mode))
+  :config (add-hook 'python-mode-hook 'eglot-ensure))
 #+end_src
 
 ***** Javascript

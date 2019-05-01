@@ -2,7 +2,11 @@
 
 # Example:
 #
-# python -m pyls -v
+# python -m pyls
 
 cmd="$PROJECT_PYTHON_LSP"
-ssh "$HOST_USER@$HOST_IP" -p "$HOST_PORT" -tt "$cmd"
+ssh "$HOST_USER@$HOST_IP" -p "$HOST_PORT" -tt "$cmd" > /tmp/pyls.out
+
+while true; do
+    cat /tmp/pyls.out
+done
