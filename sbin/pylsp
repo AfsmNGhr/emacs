@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+
+cmd="$PROJECT_PYTHON_LSP"
+
+ssh "$HOST_USER@$HOST_IP" -p "$HOST_PORT" -tt "$cmd"
