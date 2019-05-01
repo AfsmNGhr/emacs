@@ -888,7 +888,11 @@ Setup [[https://github.com/bbatsov/projectile][projectile]].
 Setup [[https://github.com/emacs-lsp/lsp-mode][lsp-mode]].
 
 #+BEGIN_SRC elisp
-(use-package eglot :defer t)
+(use-package eglot :defer t
+  :config
+  (add-to-list 'eglot-server-programs
+               `(python-mode . ("pyls" "-v" "--tcp" "--host"
+                                "localhost" "--port" "5000"))))
 
 ;; (use-package lsp-mode :defer t
 ;;   :config

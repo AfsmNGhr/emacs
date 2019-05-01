@@ -5,4 +5,5 @@
 #   (docker exec -it container)* python -m pyls
 
 cmd="$PROJECT_PYTHON_LSP"
-cat 3<> "ssh "$HOST_USER@$HOST_IP" -p "$HOST_PORT" -tt "$cmd" > /tmp/pyls.out"
+
+nc -l -p 5000 -e "ssh "$HOST_USER@$HOST_IP" -p "$HOST_PORT" -tt "$cmd""
